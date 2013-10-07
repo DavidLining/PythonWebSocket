@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WebSocket</title>
+<meta charset="UTF-8">
+<style>
+#log {width:600px;height: 500px;border: 1px solid #7F9DB9; overflow: auto;}
+#msg {width: 500px;}
+</style>
+<script>
+var socket;
+
+function init(){
+	var host='ws://127.0.0.1:88/';
+	try{
+		socket=new WebSocket(host);
+		socket.onopen=function(evt){ onOpen(evt);};
+		socket.onmessage=function(evt){ onMessage(evt);;};
+		socket.onclose=function(evt){ onClose(evt);};
+        socket.onerror=function(evt){onError(evt);};
+	}
+	catch(ex){log(ex);}
+	$("msg").focus;
+}
+function onOpen(evt){
+	log("Connection Success!");
+}
+function onMessage(evt){
+	log(evt.data);
+}
+function onClose(evt){
+	log("Lose Connection!");
+}
+function onError(evt){
+	log('Error Occured: '+evt.data);
+}
+
+function send(){
+	var txt,message;
+	var name="{{ username }}"
+	txt=$("msg");
+	message=name+" : "+txt.value;
+	if(!txt.value){alert("Message can not be empty");return;}
+	txt.value=" ";
+	txt.focus();
+	try{socket.send(message);}catch(ex){log(ex);}
+}
+window.onbeforeunload=function(){
+	try{
+		socket.send('quit');
+		socket.close();
+		socket=null;
+	}
+	catch(ex){
+        log(ex);
+	}
+};
+function $(id){return document.getElementById(id);}
+function log(msg){$("log").innerHTML+="<br>"+msg;}
+function onKey(event){if(event.KeyCode==13){send();}}
+function quit(){
+	socket.send('quit');
+	socket.close();
+	socket=null;
+	window.close();
+}
+</script>
+</head>
+
+<body onload="init()">
+	<h2>欢迎加入聊天室</h2>
+	<div id="log">
+	</div><br>
+	<div>
+    	<input id="msg" type="textbox" onkeypress="onKey(event)"/>
+    	<button onclick="send()">发送</button>
+    	<button onclick="quit()">退出</button>
+    </div>
+</body>
+</html>
